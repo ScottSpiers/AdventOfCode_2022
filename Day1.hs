@@ -4,7 +4,7 @@ import System.IO
 import Data.List
 import Data.Ord
 
-main = withFile' "day1.txt" part2
+main = withFile' "day1.txt" part1
 
 
 withFile' :: String -> (IO String -> IO ()) -> IO ()
@@ -26,10 +26,11 @@ part2 contents = do
         in print $ sum $ take 3 (sortBy (comparing Down) x)
 
 
+
+
 split :: [String] -> [[String]]
 split s = case dropWhile (== "") s of
     [] -> []
-    [""] -> split s
     s' -> w : split s''
         where (w, s'') = break (== "") s'
 
