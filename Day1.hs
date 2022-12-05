@@ -4,33 +4,39 @@ import System.IO
 import Data.List
 import Data.Ord
 
-main = withFile' "day1.txt" part1
+main = do 
+    part1
+    part2
 
-
-withFile' :: String -> (IO String -> IO ()) -> IO ()
+withFile' :: String -> (String -> IO ()) -> IO ()
 withFile' path f = do
     handle <- openFile path ReadMode
-    result <- f (hGetContents handle)
+    contents <- hGetContents handle
+    result <- f contents
     hClose handle
     return result
 
-part1 :: IO String -> IO ()
-part1 contents = do
-    c <- contents
-    print . maximum . map (sum) . (map . map) (read :: String -> Int) $ split $ lines c
+-- Day 1 --
+elvesTotalCalories :: String -> [Int]
+elvesTotalCalories s = map (sum) . (map . map) (read :: String -> Int) $ split $ lines s
 
-part2 :: IO String -> IO ()
-part2 contents = do
-    c <- contents
-    let x = map (sum) . (map . map) (read :: String -> Int) $ split $ lines c
-        in print $ sum $ take 3 (sortBy (comparing Down) x)
+maxCalories :: String -> IO ()
+maxCalories s = print $ maximum $ elvesTotalCalories s
 
+part1 = withFile' "day1.txt" maxCalories
 
+top3Calories :: String -> IO ()
+top3Calories s = print $ sum $ take 3 (sortBy (comparing Down) (elvesTotalCalories s))
 
+part2 = withFile' "day1.txt" top3Calories
 
 split :: [String] -> [[String]]
 split s = case dropWhile (== "") s of
     [] -> []
     s' -> w : split s''
         where (w, s'') = break (== "") s'
+
+-- Day 2 --
+
+
 
