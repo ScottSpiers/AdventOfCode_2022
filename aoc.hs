@@ -26,9 +26,11 @@ split s = case dropWhile (== "") s of
 mapRead :: [[String]] -> [[Int]]
 mapRead s =  (map . map) (read :: String -> Int) s
 
+
 -- Day 1 --
+
 elvesTotalCalories :: String -> [Int]
-elvesTotalCalories s = map (sum) . mapRead . split $ lines s
+elvesTotalCalories s = map sum . mapRead . split $ lines s
 
 maxCalories :: String -> Int
 maxCalories s = maximum $ elvesTotalCalories s
@@ -45,13 +47,26 @@ dayOnePartTwo = withFile' "day1.txt" top3Calories
 
 data Choice = Rock | Paper | Scissors deriving (Bounded, Enum, Eq, Show)
 
-data Result = Win | Draw | Lose deriving (Enum, Show)
+data Result = Lose | Draw | Win deriving (Enum, Show)
 
 
-pairUp :: [a] -> [(a, a)]
-pairUp [] = []
-pairUp (x:[]) = []
-pairUp (x:y:xs) = (x, y) : pairUp xs
+pairs :: [a] -> [(a, a)]
+pairs [] = []
+pairs (x:[]) = []
+pairs (x:y:xs) = (x, y) : pairs xs
+
+next :: (Bounded a, Enum a, Eq a) => a -> a
+next x 
+        | x == maxBound = minBound
+        | otherwise = succ x
+
+prev :: (Bounded a, Enum a, Eq a) => a -> a
+prev x 
+        | x == minBound = maxBound
+        | otherwise = pred x
+
+calcStrategy :: (Enum a, Enum b) => ((a, b) -> Int) -> [(a, b)] -> Int
+calcStrategy f xs = foldl (\acc x -> acc + f x) 0 xs
 
 evaluate :: (Choice, Choice) -> Int
 evaluate (x, y) -- +1 as Enums start at 0
@@ -59,21 +74,9 @@ evaluate (x, y) -- +1 as Enums start at 0
     | x == prev y = fromEnum y + 7
     | otherwise = fromEnum y + 1
 
-next :: (Enum a, Bounded a, Eq a) => a -> a
-next x 
-        | x == maxBound = minBound
-        | otherwise = succ x
-
-prev :: (Enum a, Bounded a, Eq a) => a -> a
-prev x 
-        | x == minBound = maxBound
-        | otherwise = pred x
-
 assumedStrategyGuide :: String -> [(Choice, Choice)]
-assumedStrategyGuide s = pairUp . map (decodeChoice) $ words s
+assumedStrategyGuide s = pairs . map (decodeChoice) $ words s
 
-calcStrategy :: (Enum a, Enum b) => ((a, b) -> Int) -> [(a, b)] -> Int
-calcStrategy f xs = foldl (\acc x -> acc + f x) 0 xs
 
 decodeChoice :: String -> Choice
 decodeChoice s -- keep x, y, z around so part 1 still works
@@ -99,9 +102,10 @@ evaulate' (c, r) = case r of -- +1 as Enums start at 0
             Lose -> (fromEnum $ prev c) + 1
 
 strategyGuide :: String -> [(Choice, Result)]
-strategyGuide s = map (decode) . pairUp $ words s
+strategyGuide s = map (decode) . pairs $ words s
 
 dayTwoPartTwo = withFile' "day2.txt" (calcStrategy (evaulate') . strategyGuide)
+
 
 -- Day 3 --
 
