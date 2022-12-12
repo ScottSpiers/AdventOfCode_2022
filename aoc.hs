@@ -11,6 +11,7 @@ main = do
     dayTwoPartOne
     dayTwoPartTwo
     dayThreePartOne
+    dayThreePartTwo
 
 withFile' :: (Show a) => String -> (String -> a) -> IO ()
 withFile' path f = do
@@ -114,7 +115,7 @@ dayTwoPartTwo = withFile' "day2.txt" (calcStrategy evaulate' . strategyGuide)
 getCharIndex :: Char -> Int
 getCharIndex c
         | idx < 26 = (mod (idx + 26) 52) + 1
-        | otherwise = (mod (idx + 20) 52) + 1
+        | otherwise = (mod (idx + 20) 52) + 1 --offset of 6 chars
         where idx = ord c - ord 'A'
 
 getPriority :: String -> Int
@@ -122,7 +123,7 @@ getPriority s = sum . map getCharIndex $ nub [c | c <- x, c `elem` y]
         where (x, y) = splitAt (length s `div` 2) s
 
 getTotalPriority :: [String] -> Int
-getTotalPriority s = foldl (\acc x -> acc + getPriority x) 0 s
+getTotalPriority s = sum $ map getPriority s
 
 dayThreePartOne = withFile' "day3.txt" (getTotalPriority . lines)
 
@@ -131,14 +132,14 @@ elfGroups [] = []
 elfGroups s =  x : elfGroups y
         where (x, y) = splitAt 3 s
 
-getBadges :: [String] -> Int
-getBadges (x:y:z:xs) = sum . map getCharIndex $ nub [c | c <- x, c `elem` y, c `elem` z]
-getBadges _ = 0
+getBadgePriority :: [String] -> Int
+getBadgePriority (x:y:z:xs) = sum . map getCharIndex $ nub [c | c <- x, c `elem` y, c `elem` z]
+getBadgePriority _ = 0
 
-getBadgePriority :: [[String]] -> Int
-getBadgePriority s = foldl (\acc x -> acc + getBadges x) 0 s
+getTotalBadgePriority :: [[String]] -> Int
+getTotalBadgePriority s = sum $ map getBadgePriority s
 
-dayThreePartTwo = withFile' "day3.txt" (getBadgePriority . elfGroups . lines)
+dayThreePartTwo = withFile' "day3.txt" (getTotalBadgePriority . elfGroups . lines)
 
 -- Day 4 --
 
