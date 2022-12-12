@@ -143,3 +143,22 @@ dayThreePartTwo = withFile' "day3.txt" (getTotalBadgePriority . elfGroups . line
 
 -- Day 4 --
 
+dayFourPartOne = withFile' "day4.txt" (test . lines)
+
+assignPair :: (Char -> Bool) -> String -> (String, String)
+assignPair p s = (x, drop (length x + 1) s)
+        where x = takeWhile p s
+
+isContained :: ((Int, Int), (Int, Int)) -> Bool
+isContained ((w, x), (y, z)) = elf1 `isInfixOf` elf2 || elf2 `isInfixOf` elf1
+        where 
+                elf1 = [w..x]
+                elf2 = [y..z]
+
+parseGroups :: (String, String) -> ((String, String), (String, String))
+parseGroups (x, y) = (assignPair (/= '-') x, assignPair (/= '-') y)
+
+readGroups :: ((String, String), (String, String)) -> ((Int, Int), (Int, Int))
+readGroups ((w, x), (y, z)) = ((read w, read x), (read y, read z))
+
+test = length . filter isContained . map readGroups . map parseGroups . map (assignPair (/= ','))
