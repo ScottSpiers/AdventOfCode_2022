@@ -1,6 +1,7 @@
 module Main where
 
 import System.IO
+import Data.Char
 import Data.List
 import Data.Ord
 
@@ -9,6 +10,7 @@ main = do
     dayOnePartTwo
     dayTwoPartOne
     dayTwoPartTwo
+    dayThreePartOne
 
 withFile' :: (Show a) => String -> (String -> a) -> IO ()
 withFile' path f = do
@@ -84,7 +86,7 @@ decodeChoice s -- keep x, y, z around so part 1 still works
         | s == "B" || s == "Y" = Paper
         | s == "C" || s == "Z" = Scissors
 
-dayTwoPartOne = withFile' "day2.txt" (calcStrategy (evaluate) . assumedStrategyGuide)
+dayTwoPartOne = withFile' "day2.txt" (calcStrategy evaluate . assumedStrategyGuide)
 
 decodeResult :: String -> Result
 decodeResult s
@@ -104,11 +106,39 @@ evaulate' (c, r) = case r of -- +1 as Enums start at 0
 strategyGuide :: String -> [(Choice, Result)]
 strategyGuide s = map (decode) . pairs $ words s
 
-dayTwoPartTwo = withFile' "day2.txt" (calcStrategy (evaulate') . strategyGuide)
+dayTwoPartTwo = withFile' "day2.txt" (calcStrategy evaulate' . strategyGuide)
 
 
 -- Day 3 --
 
+getCharIndex :: Char -> Int
+getCharIndex c
+        | idx < 26 = (mod (idx + 26) 52) + 1
+        | otherwise = (mod (idx + 20) 52) + 1
+        where idx = ord c - ord 'A'
 
+getPriority :: String -> Int
+getPriority s = sum . map getCharIndex $ nub [c | c <- x, c `elem` y]
+        where (x, y) = splitAt (length s `div` 2) s
 
+getTotalPriority :: [String] -> Int
+getTotalPriority s = foldl (\acc x -> acc + getPriority x) 0 s
+
+dayThreePartOne = withFile' "day3.txt" (getTotalPriority . lines)
+
+elfGroups :: [String] -> [[String]]
+elfGroups [] = []
+elfGroups s =  x : elfGroups y
+        where (x, y) = splitAt 3 s
+
+getBadges :: [String] -> Int
+getBadges (x:y:z:xs) = sum . map getCharIndex $ nub [c | c <- x, c `elem` y, c `elem` z]
+getBadges _ = 0
+
+getBadgePriority :: [[String]] -> Int
+getBadgePriority s = foldl (\acc x -> acc + getBadges x) 0 s
+
+dayThreePartTwo = withFile' "day3.txt" (getBadgePriority . elfGroups . lines)
+
+-- Day 4 --
 
