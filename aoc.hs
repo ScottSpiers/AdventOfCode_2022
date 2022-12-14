@@ -12,6 +12,8 @@ main = do
     dayTwoPartTwo
     dayThreePartOne
     dayThreePartTwo
+    dayFourPartOne
+    dayFourPartTwo
 
 withFile' :: (Show a) => String -> (String -> a) -> IO ()
 withFile' path f = do
@@ -143,3 +145,36 @@ dayThreePartTwo = withFile' "day3.txt" (getTotalBadgePriority . elfGroups . line
 
 -- Day 4 --
 
+dayFourPartOne = withFile' "day4.txt" (numContained . lines)
+
+splitBy :: (Char -> Bool) -> String -> (String, String)
+splitBy p s = (x, drop (length x + 1) s)
+        where x = takeWhile p s
+
+fullyContains :: ((Int, Int), (Int, Int)) -> Bool
+fullyContains ((w, x), (y, z)) = elf1 `isInfixOf` elf2 || elf2 `isInfixOf` elf1
+        where 
+                elf1 = [w..x]
+                elf2 = [y..z]
+
+parseGroups :: (String, String) -> ((Int, Int), (Int, Int))
+parseGroups (s1, s2) = ((read $ fst p1, read $ snd p1), (read $ fst p2, read $ snd p2))
+        where 
+                p1 = splitBy (/= '-') s1
+                p2 = splitBy (/= '-') s2
+
+groups = map parseGroups . map (splitBy (/= ','))
+
+numContained = length . filter fullyContains . groups
+
+dayFourPartTwo = withFile' "day4.txt" (numContained' . lines)
+
+containsAny :: ((Int, Int), (Int, Int)) -> Bool
+containsAny ((w, x), (y, z)) = length (elf1 \\ elf2) /= length elf1 || length (elf2 \\ elf1) /= length elf2
+        where 
+                elf1 = [w..x]
+                elf2 = [y..z]
+
+numContained' = length . filter containsAny . groups
+
+-- Day 5 --
