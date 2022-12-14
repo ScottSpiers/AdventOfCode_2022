@@ -147,25 +147,25 @@ dayThreePartTwo = withFile' "day3.txt" (getTotalBadgePriority . elfGroups . line
 
 dayFourPartOne = withFile' "day4.txt" (numContained . lines)
 
-assignPair :: (Char -> Bool) -> String -> (String, String)
-assignPair p s = (x, drop (length x + 1) s)
+splitBy :: (Char -> Bool) -> String -> (String, String)
+splitBy p s = (x, drop (length x + 1) s)
         where x = takeWhile p s
 
-isContained :: ((Int, Int), (Int, Int)) -> Bool
-isContained ((w, x), (y, z)) = elf1 `isInfixOf` elf2 || elf2 `isInfixOf` elf1
+fullyContains :: ((Int, Int), (Int, Int)) -> Bool
+fullyContains ((w, x), (y, z)) = elf1 `isInfixOf` elf2 || elf2 `isInfixOf` elf1
         where 
                 elf1 = [w..x]
                 elf2 = [y..z]
 
-parseGroups :: (String, String) -> ((String, String), (String, String))
-parseGroups (x, y) = (assignPair (/= '-') x, assignPair (/= '-') y)
+parseGroups :: (String, String) -> ((Int, Int), (Int, Int))
+parseGroups (s1, s2) = ((read $ fst p1, read $ snd p1), (read $ fst p2, read $ snd p2))
+        where 
+                p1 = splitBy (/= '-') s1
+                p2 = splitBy (/= '-') s2
 
-readGroups :: ((String, String), (String, String)) -> ((Int, Int), (Int, Int))
-readGroups ((w, x), (y, z)) = ((read w, read x), (read y, read z))
+groups = map parseGroups . map (splitBy (/= ','))
 
-groups = map readGroups . map parseGroups . map (assignPair (/= ','))
-
-numContained = length . filter isContained . groups
+numContained = length . filter fullyContains . groups
 
 dayFourPartTwo = withFile' "day4.txt" (numContained' . lines)
 
@@ -175,4 +175,6 @@ containsAny ((w, x), (y, z)) = length (elf1 \\ elf2) /= length elf1 || length (e
                 elf1 = [w..x]
                 elf2 = [y..z]
 
-numContained' = length . filter containsAny .groups
+numContained' = length . filter containsAny . groups
+
+-- Day 5 --
