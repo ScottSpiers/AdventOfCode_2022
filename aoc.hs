@@ -178,3 +178,76 @@ containsAny ((w, x), (y, z)) = length (elf1 \\ elf2) /= length elf1 || length (e
 numContained' = length . filter containsAny . groups
 
 -- Day 5 --
+
+data Action = Move | Add | None deriving (Enum, Show, Eq)
+
+data Direction = From | To | Other deriving (Enum, Show, Eq)
+        
+
+test = map (reverse . tail) . groupBy (\x -> isAlpha) . filter (isAlphaNum) . unlines . transpose . reverse . test2
+
+test2 = takeWhile (/= "") . lines
+
+state :: String -> [String]
+state s = performActions y x
+        where (x, y) = (test s, instructions s)
+
+instructions = mapRead . map (filter (isDigit')) . map words . tail . dropWhile (/="") . lines
+
+dayFivePartOne = withFile' "day5.txt" (getTops .state)
+
+dayFivePartTwo = withFile' "day5.txt" (getTops .state')
+
+test3 = withFile' "day5.txt" instructions
+
+test4 = withFile' "day5.txt" test
+
+getTops :: [String] -> String
+getTops [] = []
+getTops ("":xs) = " " ++ getTops xs
+getTops (x:xs) = head x : getTops xs
+
+isDigit' :: String -> Bool
+isDigit' s = all isDigit s
+
+doMove :: [Int] -> [String] -> [String]
+doMove (m:f:t:[]) xs
+        | f < t = x ++ ((drop m idx) : tail w) ++ ((s ++ tSt) : tail z)
+        | f > t = a ++ ((s ++ tSt) : tail c) ++ ((drop m idx) : tail d)
+        | otherwise = xs --moving from x to x while result in same string? or does it reverse the take
+        where
+                s = reverse $ take m idx
+                tSt = xs !! (t - 1)
+                idx = xs !! (f - 1)
+                (x, y) = splitAt (f-1) xs
+                (w, z) = splitAt (abs(f-t)) y
+                (a, b) = splitAt (t-1) xs
+                (c, d) = splitAt (abs(f-t)) b
+doMove _ xs = xs
+
+state' :: String -> [String]
+state' s = performActions' y x
+        where (x, y) = (test s, instructions s)
+
+doMove' :: [Int] -> [String] -> [String]
+doMove' (m:f:t:[]) xs
+        | f < t = x ++ ((drop m idx) : tail w) ++ ((s ++ tSt) : tail z)
+        | f > t = a ++ ((s ++ tSt) : tail c) ++ ((drop m idx) : tail d)
+        | otherwise = xs --moving from x to x while result in same string? or does it reverse the take
+        where
+                s = take m idx
+                tSt = xs !! (t - 1)
+                idx = xs !! (f - 1)
+                (x, y) = splitAt (f-1) xs
+                (w, z) = splitAt (abs(f-t)) y
+                (a, b) = splitAt (t-1) xs
+                (c, d) = splitAt (abs(f-t)) b
+doMove' _ xs = xs
+
+performActions :: [[Int]] -> [String] -> [String]
+performActions (x:[]) s = doMove x s
+performActions (x:xs) s = performActions xs (doMove x s)
+
+performActions' :: [[Int]] -> [String] -> [String]
+performActions' (x:[]) s = doMove' x s
+performActions' (x:xs) s = performActions' xs (doMove' x s)
