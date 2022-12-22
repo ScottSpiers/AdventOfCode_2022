@@ -14,6 +14,8 @@ main = do
     dayThreePartTwo
     dayFourPartOne
     dayFourPartTwo
+    dayFivePartOne
+    dayFivePartTwo
 
 withFile' :: (Show a) => String -> (String -> a) -> IO ()
 withFile' path f = do
@@ -178,3 +180,64 @@ containsAny ((w, x), (y, z)) = length (elf1 \\ elf2) /= length elf1 || length (e
 numContained' = length . filter containsAny . groups
 
 -- Day 5 --
+isStringDigit :: String -> Bool
+isStringDigit s = all isDigit s
+
+getTops :: [String] -> String
+getTops [] = []
+getTops ("":xs) = " " ++ getTops xs
+getTops (x:xs) = head x : getTops xs
+
+initialState = map (reverse . tail) . groupBy (\x -> isAlpha) . filter (isAlphaNum) . unlines . transpose . reverse . takeWhile (/= "") . lines
+
+instructions = mapRead . map (filter (isStringDigit)) . map words . tail . dropWhile (/="") . lines
+
+dayFivePartOne = withFile' "day5.txt" (getTops . state)
+
+state :: String -> [String]
+state s = performActions y x
+        where (x, y) = (initialState s, instructions s)
+
+performActions :: [[Int]] -> [String] -> [String]
+performActions (x:[]) s = doMove x s
+performActions (x:xs) s = performActions xs (doMove x s)
+
+doMove :: [Int] -> [String] -> [String]
+doMove (m:f:t:[]) xs
+        | f < t = x ++ drop m from : tail w ++ (s ++ to) : tail z
+        | f > t = a ++ (s ++ to) : tail c ++ drop m from : tail d
+        | otherwise = xs
+        where
+                s = reverse $ take m from
+                to = xs !! (t - 1)
+                from = xs !! (f - 1)
+                (x, y) = splitAt (f-1) xs
+                (w, z) = splitAt (abs(f-t)) y
+                (a, b) = splitAt (t-1) xs
+                (c, d) = splitAt (abs(f-t)) b
+doMove _ xs = xs
+
+dayFivePartTwo = withFile' "day5.txt" (getTops .state')
+
+state' :: String -> [String]
+state' s = performActions' y x
+        where (x, y) = (initialState s, instructions s)
+
+doMove' :: [Int] -> [String] -> [String]
+doMove' (m:f:t:[]) xs
+        | f < t = x ++ drop m from : tail w ++ (s ++ to) : tail z
+        | f > t = a ++ (s ++ to) : tail c ++ drop m from : tail d
+        | otherwise = xs
+        where
+                s = take m from
+                to = xs !! (t - 1)
+                from = xs !! (f - 1)
+                (x, y) = splitAt (f-1) xs
+                (w, z) = splitAt (abs(f-t)) y
+                (a, b) = splitAt (t-1) xs
+                (c, d) = splitAt (abs(f-t)) b
+doMove' _ xs = xs
+
+performActions' :: [[Int]] -> [String] -> [String]
+performActions' (x:[]) s = doMove' x s
+performActions' (x:xs) s = performActions' xs (doMove' x s)
